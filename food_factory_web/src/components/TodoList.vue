@@ -1,6 +1,7 @@
 <template>
-  <!-- 修改为 flex 布局，让容器占据整个空间 -->
+  
   <div class="todo-list-container" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+    <!-- 修改为 flex 布局，让容器占据整个空间 -->
     <div class="todo-list" style="flex: 1; overflow-y: auto;"> <!-- 添加 overflow-y: auto -->
       <h2 class="todo-list-title">称重列表</h2>
       <transition-group name="fade" tag="ul">
