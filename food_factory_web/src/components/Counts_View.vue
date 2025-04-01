@@ -137,22 +137,54 @@ export default {
           this.startCamera(index);
         });
       },
-      startCamera(cameraId) {
-        if (this.cameras[cameraId]) {
-          const constraints = {
-            video: { deviceId: { exact: this.cameras[cameraId].deviceId } }
-          };
-          navigator.mediaDevices.getUserMedia(constraints)
-            .then(stream => {
-              this.videoStreams[cameraId] = stream;
-              this.playVideo(cameraId);
-              setTimeout(() => this.takePhoto(cameraId),1000); // 等待3秒后拍照
-            })
-            .catch(err => {
-              console.error(`Error accessing camera ${cameraId}:`, err);
-            });
-        } else {
-          console.log(`没有找到ID为${cameraId}的摄像头`);
+      async startCamera(cameraId) {
+        try {
+          // 动态获取设备列表
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const targetCamera = devices.find(device =>
+              device.kind === 'videoinput' && device.deviceId === this.cameras[cameraId]?.deviceId
+          );
+
+          if (!targetCamera) {
+            console.log(`没有找到ID为${cameraId}的摄像头`);
+            return;
+          }
+
+          // 先尝试不设置约束条件
+          let constraints = { video: true };
+
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.videoStreams[cameraId] = stream;
+            this.playVideo(cameraId);
+            setTimeout(() => this.takePhoto(cameraId), 1000);
+          } catch (initialError) {
+            if (initialError.name === 'OverconstrainedError') {
+              // 获取设备支持的约束条件
+              const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+              constraints = {
+                video: {
+                  deviceId: { exact: targetCamera.deviceId },
+                  // 根据支持的约束条件设置合理的值
+                  width: supportedConstraints.width ? { ideal: 640 } : undefined,
+                  height: supportedConstraints.height ? { ideal: 480 } : undefined
+                }
+              };
+
+              try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                this.videoStreams[cameraId] = stream;
+                this.playVideo(cameraId);
+                setTimeout(() => this.takePhoto(cameraId), 1000);
+              } catch (adjustedError) {
+                console.error(`调整约束条件后访问 ID 为 ${cameraId} 的摄像头时出错:`, adjustedError);
+              }
+            } else {
+              console.error(`访问 ID 为 ${cameraId} 的摄像头时出错:`, initialError);
+            }
+          }
+        } catch (error) {
+          console.error(`枚举 ID 为 ${cameraId} 的摄像头设备时出错:`, error);
         }
       },
       playVideo(cameraId) {
