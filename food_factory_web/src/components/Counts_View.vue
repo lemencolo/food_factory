@@ -57,7 +57,6 @@ export default {
             ChangetakePhoto_1s: false,
             inputNumber: null,
             cameras: [], // 存储摄像头信息
-            videoStreams: [], // 存储每个摄像头的视频流对象
             videoElements: [], // 存储每个摄像头的video元素
             imageSrc: [], // 存储每个摄像头拍摄的照片
             storageUrls: [], // 存储每个摄像头照片的服务器地址
