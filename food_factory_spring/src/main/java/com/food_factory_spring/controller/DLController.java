@@ -1,8 +1,5 @@
 package com.food_factory_spring.controller;
 
-import com.benjaminwan.ocrlibrary.OcrResult;
-import io.github.mymonstercat.Model;
-import io.github.mymonstercat.ocr.InferenceEngine;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 

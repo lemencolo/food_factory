@@ -1,16 +1,12 @@
 package com.food_factory_spring.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.benjaminwan.ocrlibrary.OcrResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.food_factory_spring.common.Result;
 import com.food_factory_spring.common.StringSimilarity;
 import com.food_factory_spring.common.TableNameGenerator;
 import com.food_factory_spring.common.TableNameValidator;
 import com.food_factory_spring.entity.FlavourIngredients;
 import com.food_factory_spring.service.IFlavourIngredientsService;
-import io.github.mymonstercat.Model;
-import io.github.mymonstercat.ocr.InferenceEngine;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -169,58 +165,6 @@ public class OCR_controller {
 
         // 若相似度超过阈值则替换，否则保留原文本
         return maxSimilarity >= SIMILARITY_THRESHOLD ? bestMatch : input;
-    }
-
-    @PostMapping("/upload1s")
-    public Result ocr_1s(@RequestParam("file") MultipartFile file) {
-        try {
-            String next_ingredient_name = listPageSpecialQuery();
-            System.out.println(next_ingredient_name);
-
-            // 获取当前日期和时间
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH-mm-ss");
-
-            String dateFolderName = dateFormat.format(new Date());
-            String fileName = timeFormat.format(new Date()) + ".png";
-
-            // 创建存储目录
-            Path storageDirectory = Paths.get("/Users/user/code/food_factory/paddle_ocr_1s", dateFolderName);
-            if (!Files.exists(storageDirectory)) {
-                Files.createDirectories(storageDirectory);
-            }
-
-            // 创建文件路径
-            File imageFile = new File(storageDirectory.toFile(), fileName);
-
-            // 将上传的图片保存到指定路径
-            try (FileOutputStream fos = new FileOutputStream(imageFile)) {
-                fos.write(file.getBytes());
-            }
-
-            // 初始化OCR引擎
-            InferenceEngine engine = InferenceEngine.getInstance(Model.ONNX_PPOCR_V3);
-
-            // 执行OCR识别
-            OcrResult ocrResult = engine.runOcr(imageFile.getAbsolutePath());
-
-            // 返回OCR识别结果
-            String ocrText = ocrResult.getStrRes().trim();
-
-            // 删除临时文件
-            boolean deleted = imageFile.delete();
-            if (!deleted) {
-                return Result.fail();
-            }
-            if (ocrText.equals(next_ingredient_name)) {
-                return Result.suc("2000");
-            }
-            return Result.suc(ocrText);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Result.fail();
-        }
     }
 
     public String listPageSpecialQuery() {
